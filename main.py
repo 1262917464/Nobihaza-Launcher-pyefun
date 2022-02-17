@@ -1,17 +1,23 @@
 import pyefun.wxefun as wx
 import locale
 from coding import *
+from lang import *
 import os
 import configparser
+
 
 class 窗口1(wx.窗口):
     def __init__(self):
         self.初始化界面()
         self.填充列表()
+        self.load_i18n_list()
+        self.i18n()
+        if not string_support(os.getcwd(),"Shift-JIS"):
+            wx.信息框(load_text("nosjis"),load_text("warning"),5)
 
     def 初始化界面(self):
         #########以下是创建的组件代码#########
-        wx.窗口.__init__(self, None, title='Nobihaza Launcher (Pyefun ver.) v1 by 1262917464', size=(576, 640), name='frame', style=wx.窗口边框.普通固定边框& ~(wx.窗口样式.最大化按钮))
+        wx.窗口.__init__(self, None, title='Nobihaza Launcher (Pyefun ver.) v1.1 by 1262917464', size=(576, 640), name='frame', style=wx.窗口边框.普通固定边框& ~(wx.窗口样式.最大化按钮))
         self.容器 = wx.容器(self)
         self.Centre()
         self.窗口1 = self
@@ -21,13 +27,35 @@ class 窗口1(wx.窗口):
         self.超级列表框2 = wx.超级列表框(self.容器, size=(544, 480), pos=(8, 8), style=wx.超级列表框样式.报表列表框 | wx.超级列表框样式.图标顶部对齐 | wx.超级列表框样式.显示垂直表格线)
         self.超级列表框2.背景颜色 = (255, 255, 255, 255)
         self.超级列表框2.绑定事件(wx.事件.被双击, self.双击)
-        self.按钮1 = wx.按钮(self.容器, size=(136, 40), pos=(8, 496), label='载入列表')
+        self.按钮1 = wx.按钮(self.容器, size=(176, 40), pos=(8, 495), label='载入列表')
         self.按钮1.绑定事件(wx.事件.被单击, self.按钮1_被单击)
-        self.按钮2 = wx.按钮(self.容器, size=(136, 40), pos=(8, 548), label='窗口启动游戏(2K限定)')
+        self.按钮2 = wx.按钮(self.容器, size=(176, 40), pos=(8, 547), label='窗口启动游戏(2K限定)')
         self.按钮2.绑定事件(wx.事件.被单击, self.按钮2_被单击)
-        self.按钮3 = wx.按钮(self.容器, size=(136, 40), pos=(152, 496), label='读取本地游戏')
+        self.按钮3 = wx.按钮(self.容器, size=(176, 40), pos=(191, 494), label='读取本地游戏')
         self.按钮3.绑定事件(wx.事件.被单击, self.按钮3_被单击)
+        self.组合框1 = wx.组合框(self.容器, value='', pos=(376, 565), choices=[], style=wx.组合框样式.不可编辑下拉式)
+        self.组合框1.SetSize((176, 22))
+        self.组合框1.背景颜色 = (255, 255, 255, 255)
+        self.组合框1.置列表项目([])
+        self.组合框1.绑定事件(wx.事件.列表项被选择, self.组合框1_列表项被选择)
+        self.按钮4 = wx.按钮(self.容器, size=(176, 40), pos=(376, 495), label='设置LE路径')
+        self.按钮4.绑定事件(wx.事件.被单击, self.按钮4_被单击)
+        self.标签1 = wx.标签(self.容器, size=(90, 18), pos=(376, 547), label='language', style=wx.ALIGN_LEFT)
 		#########以上是创建的组件代码##########
+
+    def i18n(self):
+        self.组合框1.内容 = load_lang()
+        self.按钮1.置标题(load_text("loadlist"))
+        self.按钮2.置标题(load_text("start"))
+        self.按钮3.置标题(load_text("loadgames"))
+        self.按钮4.置标题(load_text("setle"))
+        self.超级列表框2.置列标题(1,load_text("gamename"))
+
+    def load_i18n_list(self):
+        for item in os.listdir("lang"):
+            self.组合框1.插入项目(0,item.replace(".ini",""))
+                #print(item)
+
 
     #########以下是组件绑定的事件代码#########
     
@@ -58,6 +86,38 @@ class 窗口1(wx.窗口):
         self.start(self.超级列表框2.取标题(self.超级列表框2.取现行选中项(), 2), self.超级列表框2.取标题(self.超级列表框2.取现行选中项(), 0))
 
 
+	
+    def 组合框1_列表项被选择(self,event):
+        print("组合框1_列表项被选择")
+        conf = configparser.RawConfigParser()
+        conf.read("config.ini")
+        print(self.组合框1.取选中项文本())
+        if not "config" in conf.sections():
+            conf.add_section("config")
+        conf['config']['lang'] = self.组合框1.取选中项文本()
+        with open("config.ini", 'w') as configfile:
+            conf.write(configfile)
+        self.i18n()
+                        
+	
+    def 按钮4_被单击(self,event):
+        print("按钮4_被单击")
+        dlg = wx.FileDialog(self,
+                            message=load_text("findle"),
+                            wildcard="LEProc.exe",
+                            style=wx.FD_OPEN)
+        dlg.ShowModal()
+        print(dlg.GetPath())
+        if not len(dlg.GetPath()) > 0:
+            return
+        conf = configparser.RawConfigParser()
+        conf.read("config.ini")
+        if not "config" in conf.sections():
+            conf.add_section("config")
+        conf['config']['LE'] = dlg.GetPath()
+        with open("config.ini", 'w') as configfile:
+            conf.write(configfile)
+                        
 	#########以上是组件绑定的事件代码#########
     #def 载入列表:
         #text =
@@ -72,22 +132,25 @@ class 窗口1(wx.窗口):
         #    print("list_utf8.bin存在")
         #else:
         #    return
+        i = 0
         if os.path.isfile("list_utf8.bin"):
             with open("list_utf8.bin","r",encoding="utf-8") as f:
                 for line in f.readlines():
                     line = line.strip('\n')
                     data = line.split("----")
-                    self.超级列表框2.插入表项(0, data[0])
-                    self.超级列表框2.置标题(0, 1, data[1])
-                    self.超级列表框2.置标题(0, 2, data[2])
+                    self.超级列表框2.插入表项(i, data[0])
+                    self.超级列表框2.置标题(i, 1, data[1])
+                    self.超级列表框2.置标题(i, 2, data[2])
+                    i = i + 1
         elif os.path.isfile("list.bin"):
             with open("list.bin","r",encoding="gbk") as f:
                 for line in f.readlines():
                     line = line.strip('\n')
                     data = line.split("----")
-                    self.超级列表框2.插入表项(0, data[0])
-                    self.超级列表框2.置标题(0, 1, data[1])
-                    self.超级列表框2.置标题(0, 2, data[2])
+                    self.超级列表框2.插入表项(i, data[0])
+                    self.超级列表框2.置标题(i, 1, data[1])
+                    self.超级列表框2.置标题(i, 2, data[2])
+                    i = i + 1
         else:
             self.搜索游戏()
 
@@ -150,14 +213,21 @@ class 窗口1(wx.窗口):
         cmd = path
         conf = configparser.RawConfigParser()
         if app == "1":
+            if not string_support(cmd, "Shift-JIS"):
+                wx.信息框(load_text("nosjis"), load_text("warning"), 5)
             conf.read("config.ini")
+            if not "config" in conf.sections():
+                conf.add_section("config")
+            if not "LE" in conf['config']:
+                wx.信息框(load_text("nole"),load_text("error"),4)
+                return
             LE = conf['config']['LE']
-            cmd = '"' + LE.replace("%DEFAULT_FOLDER%",os.getcwd()) + '"' + " " + '"' + cmd + '"' + " -" + '"' + "NormalPlay ShowTitle Window" + '"'
+            cmd = '"' + LE.replace("%DEFAULT_FOLDER%",os.getcwd()) + '"' + " " + '"' + cmd + '"' + r' "NormalPlay ShowTitle Window"'
         else:
-            cmd = '"' + cmd + '"' + r" NormalPlay ShowTitle Window"
-        print(cmd)
+            cmd = '"' + cmd + '" NormalPlay ShowTitle Window'
+        print('start "" ' + cmd)
         os.system("chcp 65001")
-        os.system("call " + cmd)
+        os.system('start "" ' + cmd)
 
 
 class 应用(wx.App):

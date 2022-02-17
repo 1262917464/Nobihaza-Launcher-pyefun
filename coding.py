@@ -32,3 +32,10 @@ def string_encoding(b: bytes):
         except Exception:
             continue
     return '未知的字符编码类型'
+
+def string_support(s: str,encoding):
+    return s == s.encode(encoding,errors='replace').decode(encoding,errors='replace')
+
+if __name__ == '__main__':
+    print(string_support(r"X:\2020\Nobita_s_Biohazard(2020)\Game","Shift-JIS"))
+
